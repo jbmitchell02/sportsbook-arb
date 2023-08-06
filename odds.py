@@ -1,7 +1,7 @@
 import requests
 import pandas as pd
 
-def get_mlb_odds(apiKey, regions, markets, oddsFormat):
+def get_mlb_odds(apiKey, regions, markets, oddsFormat, bookmakers='all'):
     response = requests.get(
         'https://api.the-odds-api.com/v4/sports/baseball_mlb/odds',
         params={
@@ -9,12 +9,12 @@ def get_mlb_odds(apiKey, regions, markets, oddsFormat):
             'regions': regions, # us | us2 | uk | au | eu
             'markets': markets, # h2h | spreads | totals | outrights
             'oddsFormat': oddsFormat, # decimal | american
-            'bookmakers': 'barstool,betmgm,betrivers,draftkings,fanduel,pointsbetus,unibet_us,williamhill_us,wynnbet'
+            'bookmakers': bookmakers
             }).json()
     return response
 
-def get_mlb_h2h_odds(apiKey):
-    response = get_mlb_odds(apiKey, 'us', 'h2h', 'decimal')
+def get_mlb_h2h_odds(apiKey, bookmakers='all'):
+    response = get_mlb_odds(apiKey, 'us', 'h2h', 'decimal', bookmakers)
     games = []
     for game in response:
         odds = {'bookmakers': [], game['home_team']: [], game['away_team']: []}
@@ -26,8 +26,8 @@ def get_mlb_h2h_odds(apiKey):
         games.append(df)
     return games
 
-def get_mlb_spreads_odds(apiKey):
-    response = get_mlb_odds(apiKey, 'us', 'spreads', 'decimal')
+def get_mlb_spreads_odds(apiKey, bookmakers='all'):
+    response = get_mlb_odds(apiKey, 'us', 'spreads', 'decimal', bookmakers)
     games = []
     for game in response:
         odds = {'bookmakers': [], game['home_team']: [], game['away_team']: [], 'spread': []}

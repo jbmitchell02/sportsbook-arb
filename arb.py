@@ -2,20 +2,24 @@ import pandas as pd
 import odds
 import db
 
-def arbitrage_calc(apiKey, markets='all'):
+def arbitrage_calc(apiKey, markets='all', bookmakers='all'):
     if markets == 'all':
-        h2h_games = odds.get_mlb_h2h_odds(apiKey)
-        spreads_games = odds.get_mlb_spreads_odds(apiKey)
+        h2h_games = odds.get_mlb_h2h_odds(apiKey, bookmakers)
+        spreads_games = odds.get_mlb_spreads_odds(apiKey, bookmakers)
         h2h_arb(h2h_games)
         spreads_arb(spreads_games)
+        return h2h_games + spreads_games
     elif markets == 'h2h':
-        h2h_games = odds.get_mlb_h2h_odds(apiKey)
+        h2h_games = odds.get_mlb_h2h_odds(apiKey, bookmakers)
         h2h_arb(h2h_games)
+        return h2h_games
     elif markets == 'spreads':
-        spreads_games = odds.get_mlb_spreads_odds(apiKey)
+        spreads_games = odds.get_mlb_spreads_odds(apiKey, bookmakers)
         spreads_arb(spreads_games)
+        return spreads_games
     else:
         print('Invalid market. Please choose from: all, h2h, spreads')
+        return None
 
 
 def h2h_arb(games):
@@ -37,6 +41,7 @@ def h2h_arb(games):
             print(f'H2H ({team1}, {team2}): {round(R*100, 3)}%')
             print(f'    {book1}: {v1} - {team1}')
             print(f'    {book2}: {v2} - {team2}')
+            print(f'    b2={bet_prop}b1')
 
 def spreads_arb(games):
     for df in games:
@@ -59,3 +64,4 @@ def spreads_arb(games):
                 print(f'Spread {spread} ({team1}, {team2}): {round(R*100, 3)}%')
                 print(f'    {book1}: {v1} - {team1}')
                 print(f'    {book2}: {v2} - {team2}')
+                print(f'    b2={bet_prop}b1')
