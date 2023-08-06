@@ -33,7 +33,7 @@ def h2h_arb(games):
             book1 = df.iloc[odds1_index, 0]
             book2 = df.iloc[odds2_index, 0]
             bet_prop = odds1/odds2
-            db.add_h2h_opp('baseball_mlb', team1, team2, book1, book2, odds1, odds2, returns, bet_prop)
+            #db.add_h2h_opp('baseball_mlb', team1, team2, book1, book2, odds1, odds2, returns, bet_prop)
             print(f'H2H ({team1}, {team2}): {round(returns*100, 3)}%')
             print(f'    {book1}: {odds1} - {team1}')
             print(f'    {book2}: {odds2} - {team2}')
@@ -55,7 +55,7 @@ def spreads_arb(games):
                 book1 = group.iloc[odds1_index, 0]
                 book2 = group.iloc[odds2_index, 0]
                 bet_prop = odds1/odds2
-                db.add_spreads_opp('baseball_mlb', team1, team2, book1, book2, spread, odds1, odds2, returns, bet_prop)
+                #db.add_spreads_opp('baseball_mlb', team1, team2, book1, book2, spread, odds1, odds2, returns, bet_prop)
                 print(f'Spread {spread} ({team1}, {team2}): {round(returns*100, 3)}%')
                 print(f'    {book1}: {odds1} - {team1}')
                 print(f'    {book2}: {odds2} - {team2}')
