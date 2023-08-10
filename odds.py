@@ -1,5 +1,7 @@
+
 import requests
 import pandas as pd
+
 
 def get_odds(apiKey, sport, market, bookmakers='all', regions='us', oddsFormat='decimal'):
     '''
@@ -32,6 +34,7 @@ def get_odds(apiKey, sport, market, bookmakers='all', regions='us', oddsFormat='
                 'oddsFormat': oddsFormat,
                 'bookmakers': bookmakers
                 }).json()
+
 
 class MLBDataHandler:
     '''

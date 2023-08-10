@@ -1,5 +1,15 @@
+
+
 class MLBOpportunity:
+    '''
+    Class to hold MLB arbitrage opportunities.
+    '''
+
     def __init__(self, market, home_team, away_team, point, book1, book2, odds1, odds2, returns):
+        '''
+        market: 'h2h', 'spreads', or 'totals'
+        point: 0 for h2h, home team spread for spreads, total for totals
+        '''
         self.market = market
         self.home_team = home_team
         self.away_team = away_team

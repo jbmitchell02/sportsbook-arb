@@ -1,14 +1,19 @@
+
 from odds import MLBDataHandler
 from opps import MLBOpportunity
+
 
 def calc_returns(v1, v2):
     top = v1 * v2
     bottom = v1 + v2
     return (top/bottom) - 1
 
+
 class MLBArbitrage:
     '''
-    idk what im doing with this yet
+    Class to handle MLB arbitrage opportunities. Uses MLBDataHandler to get the odds and then finds the opportunities.
+
+    self.opportunities: List of MLBOpportunity objects, sorted by highest returns
     '''
 
     def __init__(self, apiKey, markets=['h2h', 'spreads', 'totals'], bookmakers='all', regions='us'):
