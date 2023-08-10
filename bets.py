@@ -2,6 +2,16 @@
 from arb import MLBArbitrage
 
 
+def convert_to_american(odds):
+    '''
+    Convert decimal odds to american odds
+    '''
+    if odds >= 2:
+        return round((odds - 1) * 100)
+    else:
+        return round(-100 / (odds - 1))
+
+
 class MLBBet:
 
     def __init__(self, opp, b1, b2, P):
@@ -14,28 +24,17 @@ class MLBBet:
         opp = self.opp
         market = opp.market
         if market == 'h2h':
-            self._print_h2h(opp)
+            print(f'H2H: {opp.away_team} @ {opp.home_team} ${round(self.profit, 3)}')
         elif market == 'spreads':
-            self._print_spreads(opp)
+            spread = '{:+}'.format(opp.point)
+            print(f'Spread {spread}: {opp.away_team} @ {opp.home_team} ${round(self.profit, 3)}')
         elif market == 'totals':
-            self._print_totals(opp)
-
-    def _print_h2h(self, opp):
-        print(f'H2H: {opp.away_team} @ {opp.home_team} ${round(self.profit, 3)}')
-        print(f'    {opp.book1}: {opp.odds1} {opp.home_team}, ${round(self.bet1, 3)}')
-        print(f'    {opp.book2}: {opp.odds2} {opp.away_team}, ${round(self.bet2, 3)}')
-        print()
-    
-    def _print_spreads(self, opp):
-        print(f'Spread {opp.point}: {opp.away_team} @ {opp.home_team} ${round(self.profit, 3)}')
-        print(f'    {opp.book1}: {opp.odds1} {opp.home_team}, ${round(self.bet1, 3)}')
-        print(f'    {opp.book2}: {opp.odds2} {opp.away_team}, ${round(self.bet2, 3)}')
-        print()
-
-    def _print_totals(self, opp):
-        print(f'Total {opp.point}: {opp.away_team} @ {opp.home_team} ${round(self.profit, 3)}')
-        print(f'    {opp.book1}: {opp.odds1} {opp.home_team}, ${round(self.bet1, 3)}')
-        print(f'    {opp.book2}: {opp.odds2} {opp.away_team}, ${round(self.bet2, 3)}')
+            total = '{:+}'.format(opp.point)
+            print(f'Total {total}: {opp.away_team} @ {opp.home_team} ${round(self.profit, 3)}')
+        odds1 = '{:+}'.format(convert_to_american(opp.odds1))
+        odds2 = '{:+}'.format(convert_to_american(opp.odds2))
+        print(f'    {opp.book1}: {odds1} {opp.home_team}, ${round(self.bet1, 3)}')
+        print(f'    {opp.book2}: {odds2} {opp.away_team}, ${round(self.bet2, 3)}')
         print()
 
     def __lt__(self, other):
