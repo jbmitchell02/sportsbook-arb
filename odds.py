@@ -60,7 +60,6 @@ class MLBDataHandler:
         self.bookmakers = bookmakers
         self.regions = regions
         self.odds = {}
-        self.update_odds()
     
     def _get_h2h_odds(self):
         response = get_odds(self.apiKey, 'baseball_mlb', 'h2h', self.bookmakers, self.regions)
