@@ -1,11 +1,29 @@
 import pandas as pd
+from odds import MLBDataHandler
 import odds
 import db
 
 def calc_returns(v1, v2):
-    top = v1 * v2 - v1 - v2
+    top = v1 * v2
     bottom = v1 + v2
-    return top/bottom
+    return (top/bottom) - 1
+
+class MLBArbitrage:
+    '''
+    idk what im doing with this yet
+    '''
+
+    def __init__(self, apiKey, markets=['h2h', 'spreads', 'totals'], bookmakers='all', regions='us'):
+        self.apiKey = apiKey
+        self.markets = markets
+        self.bookmakers = bookmakers
+        self.regions = regions
+        self.datahandler = MLBDataHandler(apiKey, markets, bookmakers, regions)
+        self.opportunities = self._update_opportunities()
+
+    def _update_opportunities(self):
+        pass
+
 
 def arbitrage_calc(apiKey, markets=['all'], bookmakers='all'):
     if 'all' in markets:
