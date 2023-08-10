@@ -23,18 +23,21 @@ class MLBBet:
     def print(self):
         opp = self.opp
         market = opp.market
+        odds1 = '{:+}'.format(convert_to_american(opp.odds1))
+        odds2 = '{:+}'.format(convert_to_american(opp.odds2))
         if market == 'h2h':
             print(f'H2H: {opp.away_team} @ {opp.home_team} ${round(self.profit, 3)}')
+            print(f'    {opp.book1}: {odds1} {opp.home_team}, ${round(self.bet1, 3)}')
+            print(f'    {opp.book2}: {odds2} {opp.away_team}, ${round(self.bet2, 3)}')
         elif market == 'spreads':
             spread = '{:+}'.format(opp.point)
             print(f'Spread {spread}: {opp.away_team} @ {opp.home_team} ${round(self.profit, 3)}')
+            print(f'    {opp.book1}: {odds1} {opp.home_team}, ${round(self.bet1, 3)}')
+            print(f'    {opp.book2}: {odds2} {opp.away_team}, ${round(self.bet2, 3)}')
         elif market == 'totals':
-            total = '{:+}'.format(opp.point)
-            print(f'Total {total}: {opp.away_team} @ {opp.home_team} ${round(self.profit, 3)}')
-        odds1 = '{:+}'.format(convert_to_american(opp.odds1))
-        odds2 = '{:+}'.format(convert_to_american(opp.odds2))
-        print(f'    {opp.book1}: {odds1} {opp.home_team}, ${round(self.bet1, 3)}')
-        print(f'    {opp.book2}: {odds2} {opp.away_team}, ${round(self.bet2, 3)}')
+            print(f'Total {opp.point}: {opp.away_team} @ {opp.home_team} ${round(self.profit, 3)}')
+            print(f'    {opp.book1}: {odds1} Over, ${round(self.bet1, 3)}')
+            print(f'    {opp.book2}: {odds2} Under, ${round(self.bet2, 3)}')
         print()
 
     def __lt__(self, other):
@@ -52,13 +55,14 @@ class MLBBetting:
         self.bets = []
 
     def update_bets(self, return_threshold=0):
-        self.bets = []
+        new_bets = []
         self.arb.update_opps(return_threshold)
         for opp in self.arb.opportunities:
             b1, b2 = self._calc_bets(opp)
             P = opp.returns * (b1 + b2)
-            self.bets.append(MLBBet(opp, b1, b2, P))
-        self.bets.sort(reverse=True)
+            new_bets.append(MLBBet(opp, b1, b2, P))
+        new_bets.sort(reverse=True)
+        self.bets = new_bets
 
     def _calc_bets(self, opp):
         '''
@@ -80,3 +84,11 @@ class MLBBetting:
     def print_bets(self):
         for bet in self.bets:
             bet.print()
+
+
+if __name__ == '__main__':
+    api_key = 'acb9ca2b9b8fc48935534934b731019c'
+    my_funds = {'barstool': 100, 'draftkings': 100, 'fanduel': 100}
+    betting = MLBBetting(api_key, my_funds)
+    betting.update_bets(-0.025)
+    betting.print_bets()

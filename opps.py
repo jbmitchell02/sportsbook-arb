@@ -23,14 +23,17 @@ class MLBOpportunity:
     def print(self):
         if self.market == 'h2h':
             print(f'H2H: {self.away_team} @ {self.home_team} {round(self.returns*100, 3)}%')
+            print(f'    {self.book1}: {self.odds1} {self.home_team}, {round(self.odds2/self.odds1, 3)}*B2')
+            print(f'    {self.book2}: {self.odds2} {self.away_team}, {round(self.odds1/self.odds2, 3)}*B1')
         elif self.market == 'spreads':
             spread = '{:+}'.format(self.point)
             print(f'Spread {spread}: {self.away_team} @ {self.home_team} {round(self.returns*100, 3)}%')
+            print(f'    {self.book1}: {self.odds1} {self.home_team}, {round(self.odds2/self.odds1, 3)}*B2')
+            print(f'    {self.book2}: {self.odds2} {self.away_team}, {round(self.odds1/self.odds2, 3)}*B1')
         elif self.market == 'totals':
-            total = '{:+}'.format(self.point)
-            print(f'Total {total}: {self.away_team} @ {self.home_team} {round(self.returns*100, 3)}%')
-        print(f'    {self.book1}: {self.odds1} {self.home_team}, {round(self.odds2/self.odds1, 3)}*B2')
-        print(f'    {self.book2}: {self.odds2} {self.away_team}, {round(self.odds1/self.odds2, 3)}*B1')
+            print(f'Total {self.point}: {self.away_team} @ {self.home_team} {round(self.returns*100, 3)}%')
+            print(f'    {self.book1}: {self.odds1} Over, {round(self.odds2/self.odds1, 3)}*B2')
+            print(f'    {self.book2}: {self.odds2} Under, {round(self.odds1/self.odds2, 3)}*B1')
         print()
 
     def __lt__(self, other):
