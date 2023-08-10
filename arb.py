@@ -21,6 +21,7 @@ class MLBArbitrage:
         self.opportunities = []
 
     def update_opps(self, return_threshold=0):
+        self.opportunities = []
         self.datahandler.update_odds()
         mlb_odds = self.datahandler.odds
         for details, odds in mlb_odds.items():
