@@ -9,7 +9,7 @@ def setup_opps():
         CREATE TABLE IF NOT EXISTS opps (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             sport TEXT,
-            market TEXT,
+            bet_type TEXT,
             home_team TEXT,
             away_team TEXT,
             point REAL,
@@ -23,18 +23,6 @@ def setup_opps():
     ''')
     conn.commit()
     conn.close()
-
-
-def add_opp(opp):
-    if opp.returns > 0:
-        conn = sqlite3.connect('opps.db')
-        cursor = conn.cursor()
-        cursor.execute('''
-            INSERT INTO mlb_opps (sport, market, home_team, away_team, point, book1, book2, odds1, odds2, returns)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (opp.sport, opp.market, opp.home_team, opp.away_team, opp.point, opp.book1, opp.book2, opp.odds1, opp.odds2, opp.returns))
-        conn.commit()
-        conn.close()
 
 
 if __name__ == '__main__':
