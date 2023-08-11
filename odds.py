@@ -2,158 +2,79 @@
 import requests
 import pandas as pd
 
+    
+class DataHandler:
 
-def get_odds(apiKey, sport, market, bookmakers='all', regions='us', oddsFormat='decimal'):
-    '''
-    Parameters
-        apiKey: Your personal The Odds API key
-        sport: 'baseball_mlb', ...
-        market: 'h2h', 'spreads', 'totals'
-        bookmakers: Comma separated string of bookmakers to include
-        regions: Comma separated string of regions to include
-        oddsFormat: 'decimal', 'american'
-
-    Returns the request to The Odds API as a dictionary
-    '''
-    if bookmakers == 'all':
-        return requests.get(
-            f'https://api.the-odds-api.com/v4/sports/{sport}/odds',
-            params={
-                'apiKey': apiKey,
-                'regions': regions,
-                'markets': market,
-                'oddsFormat': oddsFormat
-                }).json()
-    else:
-        return requests.get(
-            f'https://api.the-odds-api.com/v4/sports/{sport}/odds',
-            params={
-                'apiKey': apiKey,
-                'regions': regions,
-                'markets': market,
-                'oddsFormat': oddsFormat,
-                'bookmakers': bookmakers
-                }).json()
-
-
-class MLBDataHandler:
-    '''
-    Class to handle MLB data from The Odds API. Access the data through the odds variable and update it with update_odds().
-
-    self.odds
-        Keys
-            h2h: ('h2h', home_team, away_team)
-            spreads: ('spreads', home_team, away_team, spread)
-            totals: ('totals', home_team, away_team, total)
-        Values
-            h2h & spreads: DataFrame with columns ['bookmakers', home_team, away_team]
-            totals: DataFrame with columns ['bookmakers', 'Over', 'Under']
-    '''
-
-    def __init__(self, apiKey, markets=['h2h', 'spreads', 'totals'], bookmakers='all', regions='us'):
-        '''
-        Parameters
-            apiKey: Your personal The Odds API key
-            markets: List of markets to include
-            bookmakers: Comma separated string of bookmakers to include
-            regions: Comma separated string of regions to include
-        '''
+    def __init__(self, apiKey, sports, bookmakers, markets=['h2h', 'spreads', 'totals']):
         self.apiKey = apiKey
-        self.markets = markets
-        self.bookmakers = bookmakers
-        self.regions = regions
+        self.sports = sports
+        self.markets = ','.join(markets)
+        self.bookmakers = ','.join(bookmakers)
         self.odds = {}
+
+    def _req_api(self, sport):
+        return requests.get(
+            f'https://api.the-odds-api.com/v4/sports/{sport}/odds',
+            params={
+                'apiKey': self.apiKey,
+                'regions': 'us',
+                'markets': self.markets,
+                'oddsFormat': 'decimal',
+                'bookmakers': self.bookmakers
+                }).json()
     
-    def _get_h2h_odds(self):
-        response = get_odds(self.apiKey, 'baseball_mlb', 'h2h', self.bookmakers, self.regions)
-        h2h_odds = {}
+    def _process_h2h(self, sport, market, bookmaker, home_team, away_team):
+        details = (sport, 'h2h', home_team, away_team)
+        if details not in self.odds.keys():
+            self.odds[details] = {'bookmakers': [], home_team: [], away_team: []}
+        team1 = market['outcomes'][0]['name']
+        odds1 = market['outcomes'][0]['price']
+        team2 = market['outcomes'][1]['name']
+        odds2 = market['outcomes'][1]['price']
+        self.odds[details]['bookmakers'].append(bookmaker)
+        self.odds[details][team1].append(odds1)
+        self.odds[details][team2].append(odds2)
 
-        for game in response:
-            home_team = game['home_team']
-            away_team = game['away_team']
-            odds = {'bookmakers': [], home_team: [], away_team: []}
+    def _process_spreads(self, sport, market, bookmaker, home_team, away_team):
+        details = (sport, 'spreads', home_team, away_team, market['outcomes'][0]['point'])
+        if details not in self.odds.keys():
+            self.odds[details] = {'bookmakers': [], home_team: [], away_team: []}
+        team1 = market['outcomes'][0]['name']
+        odds1 = market['outcomes'][0]['price']
+        team2 = market['outcomes'][1]['name']
+        odds2 = market['outcomes'][1]['price']
+        self.odds[details]['bookmakers'].append(bookmaker)
+        self.odds[details][team1].append(odds1)
+        self.odds[details][team2].append(odds2)
 
-            for book in game['bookmakers']:
-                bookmaker = book['key']
-                team1 = book['markets'][0]['outcomes'][0]['name']
-                team2 = book['markets'][0]['outcomes'][1]['name']
-                odds1 = book['markets'][0]['outcomes'][0]['price']
-                odds2 = book['markets'][0]['outcomes'][1]['price']
+    def _process_totals(self, sport, market, bookmaker, home_team, away_team):
+        details = (sport, 'totals', home_team, away_team, market['outcomes'][0]['point'])
+        if details not in self.odds.keys():
+            self.odds[details] = {'bookmakers': [], 'Over': [], 'Under': []}
+        over_under1 = market['outcomes'][0]['name']
+        odds1 = market['outcomes'][0]['price']
+        over_under2 = market['outcomes'][1]['name']
+        odds2 = market['outcomes'][1]['price']
+        self.odds[details]['bookmakers'].append(bookmaker)
+        self.odds[details][over_under1].append(odds1)
+        self.odds[details][over_under2].append(odds2)
 
-                odds['bookmakers'].append(bookmaker)
-                odds[team1].append(odds1)
-                odds[team2].append(odds2)
-            
-            h2h_odds[('h2h', home_team, away_team)] = pd.DataFrame(odds)
-
-        return h2h_odds
-    
-    def _get_spreads_odds(self):
-        response = get_odds(self.apiKey, 'baseball_mlb', 'spreads', self.bookmakers, self.regions)
-        spreads_odds = {}
-
-        for game in response:
-            home_team = game['home_team']
-            away_team = game['away_team']
-            odds = {}
-
-            for book in game['bookmakers']:
-                bookmaker = book['key']
-                team1 = book['markets'][0]['outcomes'][0]['name']
-                team2 = book['markets'][0]['outcomes'][1]['name']
-                odds1 = book['markets'][0]['outcomes'][0]['price']
-                odds2 = book['markets'][0]['outcomes'][1]['price']
-                spread = book['markets'][0]['outcomes'][0]['point']
-                if team1 != home_team:
-                    spread = -spread
-
-                if spread not in odds.keys():
-                    odds[spread] = {'bookmakers': [], home_team: [], away_team: []}
-
-                odds[spread]['bookmakers'].append(bookmaker)
-                odds[spread][team1].append(odds1)
-                odds[spread][team2].append(odds2)
-
-            for spread, odds in odds.items():
-                spreads_odds[('spreads', home_team, away_team, spread)] = pd.DataFrame(odds)
-
-        return spreads_odds
-    
-    def _get_totals_odds(self):
-        response = get_odds(self.apiKey, 'baseball_mlb', 'totals', self.bookmakers, self.regions)
-        totals_odds = {}
-
-        for game in response:
-            home_team = game['home_team']
-            away_team = game['away_team']
-            odds = {}
-
-            for book in game['bookmakers']:
-                bookmaker = book['key']
-                over_or_under1 = book['markets'][0]['outcomes'][0]['name']
-                over_or_under2 = book['markets'][0]['outcomes'][1]['name']
-                odds1 = book['markets'][0]['outcomes'][0]['price']
-                odds2 = book['markets'][0]['outcomes'][1]['price']
-                total = book['markets'][0]['outcomes'][0]['point']
-
-                if total not in odds.keys():
-                    odds[total] = {'bookmakers': [], 'Over': [], 'Under': []}
-
-                odds[total]['bookmakers'].append(bookmaker)
-                odds[total][over_or_under1].append(odds1)
-                odds[total][over_or_under2].append(odds2)
-
-            for total, odds in odds.items():
-                totals_odds[('totals', home_team, away_team, total)] = pd.DataFrame(odds)
-
-        return totals_odds
-    
     def update_odds(self):
-        new_odds = {}
-        if 'h2h' in self.markets:
-            new_odds.update(self._get_h2h_odds())
-        if 'spreads' in self.markets:
-            new_odds.update(self._get_spreads_odds())
-        if 'totals' in self.markets:
-            new_odds.update(self._get_totals_odds())
-        self.odds = new_odds
+        self.odds = {}
+        for sport in self.sports:
+            req = self._req_api(sport)
+            for game in req:
+                home_team = game['home_team']
+                away_team = game['away_team']
+                for book in game['bookmakers']:
+                    bookmaker = book['key']
+                    for market in book['markets']:
+                        bet_type = market['key']
+                        if bet_type == 'h2h':
+                            self._process_h2h(sport, market, bookmaker, home_team, away_team)
+                        elif bet_type == 'spreads':
+                            self._process_spreads(sport, market, bookmaker, home_team, away_team)
+                        elif bet_type == 'totals':
+                            self._process_totals(sport, market, bookmaker, home_team, away_team)
+        for key in self.odds.keys():
+            self.odds[key] = pd.DataFrame(self.odds[key])

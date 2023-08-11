@@ -1,53 +1,77 @@
 
-from odds import MLBDataHandler
-from opps import MLBOpportunity
+from odds import DataHandler
 
 
-def calc_returns(v1, v2):
-    top = v1 * v2
-    bottom = v1 + v2
-    return (top/bottom) - 1
+class Opportunity:
+
+    def __init__(self, sport, market, home_team, away_team, point, book1, book2, odds1, odds2, returns):
+        self.sport = sport
+        self.market = market
+        self.home_team = home_team
+        self.away_team = away_team
+        self.point = point
+        self.book1 = book1
+        self.book2 = book2
+        self.odds1 = odds1
+        self.odds2 = odds2
+        self.returns = returns
+
+    def print(self):
+        print(self.sport)
+        if self.market == 'h2h':
+            print(f'H2H: {self.away_team} @ {self.home_team} {round(self.returns*100, 3)}%')
+            print(f'    {self.book1}: {self.odds1} {self.home_team}, {round(self.odds2/self.odds1, 3)}*B2')
+            print(f'    {self.book2}: {self.odds2} {self.away_team}, {round(self.odds1/self.odds2, 3)}*B1')
+        elif self.market == 'spreads':
+            spread = '{:+}'.format(self.point)
+            print(f'Spread {spread}: {self.away_team} @ {self.home_team} {round(self.returns*100, 3)}%')
+            print(f'    {self.book1}: {self.odds1} {self.home_team}, {round(self.odds2/self.odds1, 3)}*B2')
+            print(f'    {self.book2}: {self.odds2} {self.away_team}, {round(self.odds1/self.odds2, 3)}*B1')
+        elif self.market == 'totals':
+            print(f'Total {self.point}: {self.away_team} @ {self.home_team} {round(self.returns*100, 3)}%')
+            print(f'    {self.book1}: {self.odds1} Over, {round(self.odds2/self.odds1, 3)}*B2')
+            print(f'    {self.book2}: {self.odds2} Under, {round(self.odds1/self.odds2, 3)}*B1')
+        print()
+
+    def __lt__(self, other):
+        return self.returns < other.returns
 
 
-class MLBArbitrage:
-    '''
-    Class to handle MLB arbitrage opportunities. Uses MLBDataHandler to get the odds and then finds the opportunities.
+class Arbitrage:
 
-    self.opportunities: List of MLBOpportunity objects, sorted by highest returns
-    '''
-
-    def __init__(self, apiKey, markets=['h2h', 'spreads', 'totals'], bookmakers='all', regions='us'):
-        self.datahandler = MLBDataHandler(apiKey, markets, bookmakers, regions)
+    def __init__(self, apiKey, sports, bookmakers, markets=['h2h', 'spreads', 'totals']):
+        self.datahandler = DataHandler(apiKey, sports, bookmakers, markets)
         self.opportunities = []
 
-    def update_opps(self, return_threshold=0):
-        new_opps = []
-        self.datahandler.update_odds()
-        mlb_odds = self.datahandler.odds
-        for details, odds in mlb_odds.items():
-            new_opps += self._find_opps(details, odds, return_threshold)
-        new_opps.sort(reverse=True)
-        self.opportunities = new_opps
-
+    def _calc_returns(self, v1, v2):
+        top = v1 * v2
+        bottom = v1 + v2
+        return (top/bottom) - 1
+    
     def _find_opps(self, details, odds, return_threshold):
-        '''
-        we probably need a better way to do this
-        '''
-        opps = []
         for i, v1 in enumerate(odds.iloc[:, 1]):
             for j, v2 in enumerate(odds.iloc[:, 2]):
-                R = calc_returns(v1, v2)
+                R = self._calc_returns(v1, v2)
                 if R > return_threshold:
-                    market = details[0]
-                    home_team = details[1]
-                    away_team = details[2]
+                    sport = details[0]
+                    market = details[1]
+                    home_team = details[2]
+                    away_team = details[3]
                     point = 0
                     if market == 'spreads' or market == 'totals':
-                        point = details[3]
+                        point = details[4]
                     book1 = odds.iloc[i, 0]
                     book2 = odds.iloc[j, 0]
-                    opps.append(MLBOpportunity(market, home_team, away_team, point, book1, book2, v1, v2, R))
-        return opps
+                    opp = Opportunity(sport, market, home_team, away_team, point, book1, book2, v1, v2, R)
+                    self.opportunities.append(opp)
+
+    def update_opps(self, return_threshold=0, sort=True):
+        self.opportunities = []
+        self.datahandler.update_odds()
+        for details, odds in self.datahandler.odds.items():
+            self._find_opps(details, odds, return_threshold)
+        if sort:
+            self.opportunities.sort(reverse=True)
 
     def print_opps(self):
         for opp in self.opportunities:
