@@ -14,15 +14,15 @@ class Opportunity:
         self.odds1 = odds1
         self.odds2 = odds2
         self.returns = returns
-        #self._add_to_db()
+        self._add_to_db()
 
     def _add_to_db(self):
         if self.returns > 0:
             conn = sqlite3.connect('opps.db')
             cursor = conn.cursor()
             cursor.execute('''
-                INSERT INTO mlb_opps (sport, bet_type, home_team, away_team, point, book1, book2, odds1, odds2, returns)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO opps (sport, bet_type, home_team, away_team, point, book1, book2, odds1, odds2, returns)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (self.game_details.sport_key,
                 self.bet_type,
                 self.game_details.home_team,
