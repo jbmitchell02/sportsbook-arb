@@ -21,6 +21,22 @@ class Opportunity:
             conn = sqlite3.connect('opps.db')
             cursor = conn.cursor()
             cursor.execute('''
+                CREATE TABLE IF NOT EXISTS opps (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    sport TEXT,
+                    bet_type TEXT,
+                    home_team TEXT,
+                    away_team TEXT,
+                    point REAL,
+                    book1 TEXT,
+                    book2 TEXT,
+                    odds1 REAL,
+                    odds2 REAL,
+                    returns REAL,
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            cursor.execute('''
                 INSERT INTO opps (sport, bet_type, home_team, away_team, point, book1, book2, odds1, odds2, returns)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (self.game_details.sport_key,
@@ -63,8 +79,8 @@ class Opportunity:
 
 class Arbitrage:
 
-    def __init__(self, apiKey, sports, bookmakers, markets=['h2h', 'spreads', 'totals']):
-        self.oddshandler = OddsHandler(apiKey, sports, bookmakers, markets)
+    def __init__(self, apiKey, sports, markets=['h2h', 'spreads', 'totals']):
+        self.oddshandler = OddsHandler(apiKey, sports, markets)
         self.opportunities = []
 
     def update_opps(self, return_threshold=0, sort=True):

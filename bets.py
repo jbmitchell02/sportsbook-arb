@@ -50,7 +50,7 @@ class Bet:
 class Betting:
 
     def __init__(self, apiKey, sports, funds, markets=['h2h', 'spreads', 'totals']):
-        self.arb = Arbitrage(apiKey, sports, funds.keys(), markets)
+        self.arb = Arbitrage(apiKey, sports, markets)
         self.funds = funds
         self.bets = []
   
@@ -58,10 +58,11 @@ class Betting:
         self.bets.clear()
         self.arb.update_opps(return_threshold, sort=False)
         for opp in self.arb.opportunities:
-            b1, b2 = self._calc_bets(opp)
-            P = opp.returns * (b1 + b2)
-            bet = Bet(opp, b1, b2, P)
-            self.bets.append(bet)
+            if opp.book1 in self.funds.keys() and opp.book2 in self.funds.keys():
+                b1, b2 = self._calc_bets(opp)
+                P = opp.returns * (b1 + b2)
+                bet = Bet(opp, b1, b2, P)
+                self.bets.append(bet)
         self.bets.sort(reverse=True)
 
     def print_bets(self):

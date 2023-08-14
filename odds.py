@@ -32,11 +32,10 @@ class GameDetails:
 
 class OddsHandler:
 
-    def __init__(self, apiKey, sports, bookmakers, markets=['h2h', 'spreads', 'totals']):
+    def __init__(self, apiKey, sports, markets=['h2h', 'spreads', 'totals']):
         self.apiKey = apiKey
         self.sports = sports
         self.markets = ','.join(markets)
-        self.bookmakers = ','.join(bookmakers)
         self.odds = {}
 
     def update_odds(self):
@@ -54,8 +53,7 @@ class OddsHandler:
                 'apiKey': self.apiKey,
                 'regions': 'us',
                 'markets': self.markets,
-                'oddsFormat': 'decimal',
-                'bookmakers': self.bookmakers
+                'oddsFormat': 'decimal'
                 }).json()
 
     def _process_game(self, game):
