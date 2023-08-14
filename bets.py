@@ -89,8 +89,20 @@ if __name__ == '__main__':
     uva_apiKey = 'acb9ca2b9b8fc48935534934b731019c'
     my_apiKey = '9abea1938e493d654b86a31a14fd2ab6'
     my_sports = [
+        #'americanfootball_cfl',
+        #'americanfootball_ncaaf',
+        #'americanfootball_nfl',
+        #'americanfootball_nfl_preseason',
+        #'americanfootball_xfl',
         'baseball_mlb',
-        #'americanfootball_nfl_preseason'
+        #'baseball_mlb_preseason',
+        #'baseball_ncaa',
+        #'basketball_euroleague',
+        #'basketball_nba',
+        #'basketball_nba_preseason',
+        #'basketball_ncaab',
+        #'basketball_wnba',
+        #'icehockey_nhl'
         ]
     my_funds = {
         'barstool': 100,
@@ -98,10 +110,10 @@ if __name__ == '__main__':
         'fanduel': 100
         }
     my_markets = [
-        #'h2h',
+        'h2h',
         'spreads',
-        #'totals'
+        'totals'
     ]
-    betting = Betting(my_apiKey, my_sports, my_funds, my_markets)
-    betting.update_bets(-0.02)
+    betting = Betting(uva_apiKey, my_sports, my_funds, my_markets)
+    betting.update_bets()
     betting.print_bets()
